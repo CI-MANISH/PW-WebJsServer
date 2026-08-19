@@ -1,0 +1,28 @@
+{
+  "name": "wa-salesforce-server",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^119.0.0",
+    "@vercel/speed-insights": "^2.0.0",
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.4.0",
+    "mime-types": "^3.0.2",
+    "multer": "^2.1.1",
+    "puppeteer": "^24.43.1",
+    "puppeteer-core": "^24.43.1",
+    "qrcode": "^1.5.4",
+    "whatsapp-web.js": "github:lindionez/whatsapp-web.js#feat/fix-_serialized-id-fallback",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
