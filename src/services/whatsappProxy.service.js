@@ -1,24 +1,23 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-const AWS_EC2_URL = process.env.AWS_EC2_URL || 'http://13.60.61.183:3000';
+const DEFAULT_MAIN_SERVER = process.env.MAIN_SERVER_URL || 'http://72.61.242.144';
 const SHARED_SECRET = process.env.SHARED_SECRET || 'shivam_secure_2026';
 const API_KEY = process.env.API_KEY || 'shivam_secure_2026';
 
-async function callAwsEngine(endpoint, arg2 = 'POST', arg3 = {}) {
-    let method = 'POST';
-    let payload = {};
-
-    if (typeof arg2 === 'string') {
-        method = arg2.toUpperCase();
-        payload = arg3 || {};
-    } else if (typeof arg2 === 'object' && arg2 !== null) {
-        method = 'POST';
-        payload = arg2;
-    }
-
+/**
+ * Main Server Proxy Caller
+ * @param {string} endpoint - Path to hit on main server (e.g., '/api/session/init')
+ * @param {string} method - HTTP method ('GET', 'POST', etc.)
+ * @param {object} payload - Body payload for POST requests
+ * @param {string} customBaseUrl - Optional dynamic main server URL from request body
+ */
+async function callMainServerEngine(endpoint, method = 'POST', payload = {}, customBaseUrl = null) {
+    const targetUrl = customBaseUrl || DEFAULT_MAIN_SERVER;
+    const httpMethod = method.toUpperCase();
     const timestamp = Date.now().toString();
-    const dataToSign = method === 'GET' ? '{}' : JSON.stringify(payload);
+
+    const dataToSign = httpMethod === 'GET' ? '{}' : JSON.stringify(payload);
 
     const signature = crypto
         .createHmac('sha256', SHARED_SECRET)
@@ -26,18 +25,18 @@ async function callAwsEngine(endpoint, arg2 = 'POST', arg3 = {}) {
         .digest('hex');
 
     const config = {
-        method: method,
-        url: `${AWS_EC2_URL}${endpoint}`,
+        method: httpMethod,
+        url: `${targetUrl}${endpoint}`,
         headers: {
             'Content-Type': 'application/json',
             'x-api-key': API_KEY,
             'x-timestamp': timestamp,
             'x-signature': signature
         },
-        timeout: 30000
+        timeout: 45000
     };
 
-    if (method !== 'GET') {
+    if (httpMethod !== 'GET') {
         config.data = payload;
     }
 
@@ -50,7 +49,7 @@ async function callAwsEngine(endpoint, arg2 = 'POST', arg3 = {}) {
             console.error('Response Data:', error.response.data);
             console.error('Request URL:', error.config?.url);
         } else {
-            console.error('Network/Proxy Error:', error.message);
+            console.error('Proxy Error:', error.message);
         }
 
         const errorMessage = 
@@ -62,4 +61,4 @@ async function callAwsEngine(endpoint, arg2 = 'POST', arg3 = {}) {
     }
 }
 
-module.exports = { callAwsEngine };
+module.exports = { callMainServerEngine };

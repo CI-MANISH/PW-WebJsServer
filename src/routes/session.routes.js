@@ -1,40 +1,18 @@
 const router = require('express').Router();
-const { callAwsEngine } = require('../services/whatsappProxy.service');
+const { callMainServerEngine } = require('../services/whatsappProxy.service');
 
-router.post('/init', async (req, res) => {
+router.post('/forward', async (req, res) => {
     try {
-        const result = await callAwsEngine('/api/session/init', 'POST', req.body);
+        const { mainServerUrl, endpoint, method = 'POST', data = {} } = req.body;
+
+        if (!endpoint) {
+            return res.status(400).json({ success: false, message: 'endpoint is required in body' });
+        }
+
+        const result = await callMainServerEngine(endpoint, method, data, mainServerUrl);
         return res.json(result);
     } catch (err) {
-        return res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-router.get('/status/:userId', async (req, res) => {
-    try {
-        const result = await callAwsEngine(`/api/session/status/${req.params.userId}`, 'GET');
-        return res.json(result);
-    } catch (err) {
-        return res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-router.get('/qr/:userId', async (req, res) => {
-    try {
-        const result = await callAwsEngine(`/api/session/qr/${req.params.userId}`, 'GET');
-        return res.json(result);
-    } catch (err) {
-        return res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-
-router.post('/logout', async (req, res) => {
-    try {
-        const result = await callAwsEngine('/api/session/logout', 'POST', req.body);
-        return res.json(result);
-    } catch (err) {
-        return res.status(500).json({ success: false, message: err.message });
+        return res.status(500).json({ success: false, error: err.message });
     }
 });
 
